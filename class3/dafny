@@ -6,6 +6,7 @@ ensures 0 <= i < A.Length && forall k:: 0 <= k < A.Length ==> A[k] <= A[i];
   i := 0;
   j := 1;
   while (j != A.Length)
+  decreases A.Length - j;
   invariant 0 <= i < j <= A.Length;
   invariant forall k:: 0 <= k < j ==> A[k] <= A[i];
   { 
