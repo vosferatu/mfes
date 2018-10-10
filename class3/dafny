@@ -20,6 +20,24 @@ ensures 0 <= i < A.Length && forall k:: 0 <= k < A.Length ==> A[k] <= A[i];
   }
 }
 
+predicate app(A: array<int>, x: int, l: int, h:int)
+requires  0 <= l <= h < A.Length;
+reads A;
+{
+  exists i:: l <= i < h && A[i] == x
+}
+
+method f(A: array<int>, x: int) returns (i: int)
+requires app(A,x,0, A.Length);
+ensures A[i] == x;
+{
+  i:= A.Length - 1;
+  while(A[i] != x)
+  {
+    i:= i - 1;
+  }
+}
+
 method f4a(input: int) returns (output: int)
 requires input >= 0;
 ensures output == 0;
