@@ -1,3 +1,24 @@
+method f(A:array<int>) returns(i:int)
+requires A.Length > 0;
+ensures 0 <= i < A.Length && forall k:: 0 <= k < A.Length ==> A[k] <= A[i];
+{
+  var j: int;
+  i := 0;
+  j := 1;
+  while (j != A.Length)
+  invariant 0 <= i < j <= A.Length;
+  invariant forall k:: 0 <= k < j ==> A[k] <= A[i];
+  { 
+    if (A[j] > A[i] )  { 
+        i := j; 
+        j := j+1; 
+    } 
+    else { 
+        j := j+1; 
+    } 
+  }
+}
+
 method f4a(input: int) returns (output: int)
 requires input >= 0;
 ensures output == 0;
@@ -5,6 +26,8 @@ ensures output == 0;
   var i: int;
   i := input;
   while (i > 0) 
+    invariant i >= 0;
+    decreases i; 
   {
     i := i - 1;
    }
@@ -19,10 +42,10 @@ ensures output == 0; // This is the postcondition that might not hold.
   var i: int;
   i := input;
   while (i > 0) 
-  {
-    //i := i - 2;
-    invariant i % 2 == 0 && i >= 0;
+      invariant i % 2 == 0 && i >= 0;
     decreases i;
+  {
+    i := i - 2;
    }
   output := i;
 }
