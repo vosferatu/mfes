@@ -38,6 +38,15 @@ public addClient :Client ==> ()
 			pre not exists client in set clients & Client`equals(client, c)
 post c in set clients;
 
+public removeClient : Client ==> ()
+		removeClient(c) ==
+		(
+			for all client in set clients do
+				if Client`equals(client, c) 
+				then clients := clients \ {client};
+		)
+			pre exists client in set clients & Client`equals(client, c)
+post not exists client in set clients & Client`equals(client, c);
 		
 functions
 -- TODO Define functiones here
