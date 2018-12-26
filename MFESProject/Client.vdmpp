@@ -1,0 +1,36 @@
+class Client
+types
+-- TODO Define types here
+values
+-- TODO Define values here
+instance variables
+		id: nat;
+		order: set of Delivery :={};
+		
+		
+operations
+
+public Client: nat ==> Client
+Client(i) == (
+		id := i;
+		order := {};
+);
+
+public getID: () ==> nat
+		getID() ==
+		return id;
+
+public getOrder: () ==> set of Delivery
+		getOrder() ==
+		return order;
+		
+
+functions
+
+public equals : Client * Client -> bool
+	equals(c1, c2) ==
+	c1.id = c2.id;
+
+traces
+-- TODO Define Combinatorial Test Traces here
+end Client
