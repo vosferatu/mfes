@@ -7,7 +7,6 @@ instance variables
 		id: nat;
 		order: set of Delivery :={};
 		
-		
 operations
 
 public Client: nat ==> Client
