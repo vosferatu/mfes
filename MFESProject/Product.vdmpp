@@ -4,20 +4,20 @@ types
 values
 -- TODO Define values here
 instance variables
-		products: seq of char;
+		product: seq of char;
 		price: nat;
 operations
 
 	public Product: seq of char * nat ==> Product
 	Product(p,pr) == (
-			products := p;
+			product := p;
 			price := pr;
 	);
 	
 	
 	public getProducts: () ==> seq of char
 		getProducts() ==
-		return products;
+		return product;
 	
 	public getPrice: () ==> nat
 		getPrice() ==

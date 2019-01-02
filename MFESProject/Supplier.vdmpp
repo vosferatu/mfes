@@ -1,14 +1,22 @@
-class Suplier
+class Supplier
 types
 -- TODO Define types here
 values
 -- TODO Define values here
 instance variables
 		products: set of Product :={};
+		name: seq of char;
 operations
--- TODO Define operations here
+
+public Supplier: seq of char ==> Supplier
+Supplier(n) == (
+		name := n;
+		products := {};
+);
+
+	
 functions
 -- TODO Define functiones here
 traces
 -- TODO Define Combinatorial Test Traces here
-end Suplier
+end Supplier
