@@ -1,30 +1,55 @@
 class Product
+
 types
--- TODO Define types here
+public String = seq of char;
+
 values
--- TODO Define values here
+
 instance variables
-		product: seq of char;
-		price: nat;
+		name: String;
+		price: real;
+		quantity: nat;
+		
 operations
 
-	public Product: seq of char * nat ==> Product
-	Product(p,pr) == (
-			product := p;
-			price := pr;
+	public Product: String * real * nat ==> Product
+	Product(product_name,product_price,product_quantity) == (
+			name := product_name;
+			price := product_price;
+			quantity := product_quantity;
+			return self
 	);
-	
-	
-	public getProducts: () ==> seq of char
-		getProducts() ==
-		return product;
-	
-	public getPrice: () ==> nat
-		getPrice() ==
+		
+	-- Returns product name
+	public pure getName : ()  ==> String
+		getName() == 
+		return name;
+
+	-- Returns product price
+	public pure getPrice : () ==> real
+		getPrice() == 
 		return price;
+
+	-- Returns product quantity
+	public pure getQuantity : () ==> nat
+		getQuantity() == return quantity;
+
+	-- Increases product quantity
+	public increaseQuantity : nat ==> ()
+		increaseQuantity(amount) ==
+		quantity := quantity + amount
+	pre (quantity + amount) >= 0
+	post quantity~ = quantity + amount;
+
+	-- Decreases product quantity
+	public decreaseQuantity : nat ==> ()
+		decreaseQuantity(amount) ==
+		quantity := quantity - amount
+	pre (quantity - amount) >= 0
+	post quantity~ = quantity + amount;
 		
 functions
--- TODO Define functiones here
+
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Product
