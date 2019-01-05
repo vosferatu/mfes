@@ -6,12 +6,11 @@ public String = seq of char;
 values
 
 instance variables
-		name: String;
+		public name: String;
 		price: real;
-		quantity: nat;
+		quantity: nat := 0;
 		
 operations
-
 	public Product: String * real * nat ==> Product
 	Product(product_name,product_price,product_quantity) == (
 			name := product_name;
@@ -47,7 +46,13 @@ operations
 		quantity := quantity - amount
 	pre (quantity - amount) >= 0
 	post quantity~ = quantity + amount;
-		
+
+-- Change product price
+public setPrice : real ==> ()
+	setPrice(newPrice) ==
+	price := newPrice
+	post newPrice = price;
+
 functions
 
 traces

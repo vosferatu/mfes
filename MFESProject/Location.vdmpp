@@ -1,0 +1,33 @@
+class Location
+
+types
+
+values
+
+instance variables
+		public x: int;
+		public y: int;
+
+operations
+public Location: int * int ==> Location
+Location(i,j) == (
+		x := i;
+		y := j;
+		return self
+);
+
+-- Returns x
+public pure getX : () ==> int
+		getX() == 
+		return x;
+
+-- Returns y
+public pure getY : () ==> int
+		getY() == 
+		return y;
+		
+functions
+
+traces
+
+end Location

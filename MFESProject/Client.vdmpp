@@ -9,16 +9,19 @@ instance variables
 		name: String;
 		public static clientID: int := 0;
 		public id : int := clientID;
-		orders: set of Delivery :={};
+		balance: real;
+		basket: seq of Product :=[];
+		location: Location;
 		
 operations
 
-public Client: String ==> Client
-Client(clientName) == (
+public Client: String * int * int ==> Client
+Client(clientName, x, y) == (
 		name := clientName;
 		id := clientID;
 		clientID := clientID + 1;
-		orders := {};
+		balance := 5;
+		location := new Location(x,y);
 		return self
 );
 
@@ -27,17 +30,38 @@ public pure getName : () ==> String
 		getName() == 
 		return name;
 
+-- Returns user ID
 public getID: () ==> nat
 		getID() ==
 		return id;
 
-public getOrders: () ==> set of Delivery
-		getOrders() ==
-		return orders;
+-- Returns user basket
+public getBasket: () ==> seq of Product
+		getBasket() ==
+		return basket;
+
+-- Returns user balance
+public getBalance: () ==> real
+		getBalance() ==
+		return balance;
 		
+-- User credit
+public credit : real ==> ()
+		credit(amount) ==
+		balance := balance + amount
+	pre (balance + amount) >= 0 and amount > 0
+	post balance~ = balance + amount;
+
+-- User debit
+public debit : real ==> ()
+		debit(amount) ==
+		balance := balance - amount
+	pre (balance - amount) >= 0 and amount > 0
+	post balance~ = balance + amount;
 
 functions
 
+-- Compares 2 clients by ID
 public equals : Client * Client -> bool
 	equals(c1, c2) ==
 	c1.id = c2.id;

@@ -1,36 +1,43 @@
 class Glovo
+
 types
 -- TODO Define types here
 values
 -- TODO Define values here
 instance variables
 		clients: set of Client :={};
-		deliveryToDo: set of Delivery :={};
-		deliveryDone: set of Delivery :={};
-		deliveryDoing: set of Delivery :={};
-		transport: set of Transport :={};
+		orders: set of Delivery :={};
+		suppliers: set of Supplier :={};
+		transports: set of Transport :={};
 		
 operations
 
-pure public getClient: () ==> set of Client
-		getClient() ==
+public Glovo: () ==> Glovo
+		Glovo() == return self;
+
+pure public getClients: () ==> set of Client
+		getClients() ==
 		return clients;
 
 public getDeliveryToDo: () ==> set of Delivery 
 		getDeliveryToDo() ==
-		return deliveryToDo;
+		return {order | order in set orders & order.status = <Null>};
 
 public getDeliveryDone: () ==> set of Delivery 
 		getDeliveryDone() ==
-		return deliveryDone;		
+		return {order | order in set orders & order.status = <Client>};		
 		
 public getdeliveryDoing: () ==> set of Delivery 
 		getdeliveryDoing() ==
-		return deliveryDoing;		
+		return {order | order in set orders & order.doing()};		
 
-public getTransport: () ==> set of Transport
-		getTransport() ==
-		return transport;
+public getTransports: () ==> set of Transport
+		getTransports() ==
+		return transports;
+		
+public getSuppliers: () ==> set of Supplier
+		getSuppliers() ==
+		return suppliers;
 	
 public addClient :Client ==> ()
 		addClient(c) == 
@@ -49,7 +56,7 @@ public removeClient : Client ==> ()
 post not exists client in set clients & Client`equals(client, c);
 		
 functions
--- TODO Define functiones here
+
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Glovo

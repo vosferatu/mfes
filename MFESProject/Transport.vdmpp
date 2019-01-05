@@ -1,14 +1,29 @@
 class Transport
+
 types
--- TODO Define types here
+public String = seq of char;
+
 values
--- TODO Define values here
+
 instance variables
--- TODO Define instance variables here
+		name: String;
+		location: Location;
+
 operations
--- TODO Define operations here
+public Transport: seq of char * int * int ==> Transport
+Transport(transportName, x, y) == (
+		name := transportName;
+		location := new Location(x, y);
+		return self
+);
+
+-- Returns transport name
+public pure getName : () ==> String
+		getName() == 
+		return name;
+		
 functions
--- TODO Define functiones here
+
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Transport

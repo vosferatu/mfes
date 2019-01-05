@@ -1,31 +1,55 @@
 class Delivery
+
 types
--- TODO Define types here
+public Status = <Null> | <Transport> | <Supplier> | <Client>
+
 values
--- TODO Define values here
+
 instance variables
-		products: set of seq of Product :={};
-		tranports: [Transport];
-		
-		
+		products: set of Product :={};
+		transport: [Transport];
+		public status: Status;
+
 operations
+public Delivery: set of Product * [Transport]  ==> Delivery
+		Delivery(p,t) == (
+			products := p;
+			transport := t;
+			status := <Null>;
+			if(t <> nil) then status := <Transport>;
+			return self
+		);
 
-public Delivery: set of seq of Product * [Transport]  ==> Delivery
-Delivery(p,t) == (
-		products := p;
-		tranports := t;
-);
-
-pure public getProduct: () ==> set of seq of Product
-			getProduct()  ==
+pure public getProducts: () ==> set of Product
+		getProducts()  ==
 return products;
 
 pure public getTransport: () ==> [Transport]
-			getTransport() ==
-return tranports;
+		getTransport() ==
+return transport;
 
+public setTransport: Transport ==> ()
+		setTransport(t) == (
+			transport := t;
+			status := <Transport>;
+		)
+		post status = <Transport>;
+		
+public doing: () ==> bool
+		doing() ==
+		return status = <Supplier> or status = <Transport>;
+
+public update: () ==> ()
+		update() ==
+		(
+			cases status:
+					<Transport> -> status := <Supplier>,
+					<Supplier> -> status := <Client>
+			end
+		)
+		
 functions
--- TODO Define functiones here
+
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Delivery
