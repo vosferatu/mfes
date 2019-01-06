@@ -59,6 +59,11 @@ public pure getLocation : () ==> Location
 		getLocation() ==
 		return location;
 
+-- Changes Location
+public setLocation : Location ==> ()
+		setLocation(loc) ==
+				location := loc;
+
 functions
 
 traces

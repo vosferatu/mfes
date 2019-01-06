@@ -10,7 +10,7 @@ instance variables
 		public static clientID: int := 0;
 		public id : int := clientID;
 		balance: real;
-		location: Location;
+		public location: Location;
 		
 operations
 
@@ -91,6 +91,11 @@ public refund : set of Product ==> ()
 			credit(sum);
 		)
 		pre list <> {};
+		
+-- Changes Location
+public setLocation : Location ==> ()
+		setLocation(loc) ==
+				location := loc;
 
 functions
 

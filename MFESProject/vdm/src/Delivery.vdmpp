@@ -7,9 +7,9 @@ values
 
 instance variables
 		public userID : int;
-		supplier: Supplier;
+		public supplier: Supplier;
 		products: set of Product :={};
-		transport: [Transport];
+		public transport: [Transport];
 		public status: Status;
 
 operations

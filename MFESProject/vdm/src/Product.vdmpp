@@ -11,11 +11,11 @@ instance variables
 		quantity: nat := 0;
 		
 operations
-	public Product: String * real * nat ==> Product
-	Product(product_name,product_price,product_quantity) == (
+	public Product: String * real ==> Product
+	Product(product_name,product_price) == (
 			name := product_name;
 			price := product_price;
-			quantity := product_quantity;
+			quantity := 1;
 			return self
 	);
 		

@@ -7,10 +7,10 @@ values
 FEE = 1.9;
 
 instance variables
-		clients: set of Client :={};
-		orders: set of Delivery :={};
-		suppliers: map String to Supplier :={|->};
-		transports: set of Transport :={};
+		public clients: set of Client :={};
+		public orders: set of Delivery :={};
+		public suppliers: map String to Supplier :={|->};
+		public transports: set of Transport :={};
 		
 		inv not exists c1, c2 in set clients &
 					c1 <> c2 and c1.id = c2.id;
@@ -21,9 +21,16 @@ public Glovo: () ==> Glovo
 
 -- Adds a transport
 public addTransport: Transport ==> ()
-		addTransport(transport) == transports := transports union {transport}
+		addTransport(transport) == 
+		transports := transports union {transport}
 		pre transport not in set transports
 		post transports = transports~ union {transport};
+		
+-- Remove a transport
+public removeTransport: Transport ==> ()
+		removeTransport(tr) ==
+		transports := transports \ {tr}
+		pre tr in set transports;
 		
 -- Adds a delivery
 public addDelivery: Delivery ==> ()
@@ -112,6 +119,7 @@ public order : Client * Supplier * set of Product ==> ()
 		if client.checkCredit(products, FEE) then client.pay(products, FEE);
 		
 		addDelivery(new Delivery(client.id, products, transport, supplier));
+		removeTransport(transport);
 	)
 	pre client.checkCredit(products, FEE);
 	
@@ -131,10 +139,15 @@ public removeOrder : Delivery ==> ()
 		(
 			orders := orders \ {deli};
 			
-			if deli in set getDeliveryToDo() then getClientByID(deli.userID).refund(deli.getProducts())
+			if deli in set getDeliveryToDo() then 
+				(
+					getClientByID(deli.userID).refund(deli.getProducts());
+					addTransport(deli.transport);
+				)
 		)
 		pre deli in set getDeliveryToDo();
 		
+-- Edit an order
 public editOrder : Delivery * set of Product ==> ()
 		editOrder(deli, prod) ==
 		(
@@ -147,9 +160,35 @@ public editOrder : Delivery * set of Product ==> ()
 				then (	
 					getClientByID(deli.userID).pay(prod, FEE);
 					deli.setProducts(prod);
-				);
+				)
+				else removeOrder(deli);
 		)
 		pre deli in set getDeliveryToDo();
+		
+-- Transport meets supplier
+public meetSupplier : Delivery ==> ()
+		meetSupplier(deli) ==
+		(
+			if deli in set getDeliveryToDo()
+				then (
+						deli.transport.setLocation(deli.supplier.getLocation());
+						deli.update();
+						);
+		)
+		pre deli in set {order | order in set orders & order.status = <Transport>};
+
+-- Transport meets client
+public meetClient : Delivery ==> ()
+		meetClient(deli) ==
+		(
+			if deli in set getDeliveryToDo()
+				then (
+						deli.transport.setLocation(getClientByID(deli.userID).location);
+						deli.update();
+						addTransport(deli.transport);
+						);
+		)
+		pre deli in set {order | order in set orders & order.status = <Supplier>};
 
 functions
 

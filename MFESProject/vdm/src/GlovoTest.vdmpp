@@ -1,0 +1,148 @@
+class GlovoTest is subclass of MyTestCase
+
+types
+
+values
+
+instance variables
+
+		client1: Client := new Client("carolina", 0, 0);
+		client2: Client := new Client("joao", 5, 0);
+		
+		transport1: Transport := new Transport("mota", 0, 5);
+		transport2: Transport := new Transport("carro", 5, -5);
+		
+		supplier1: Supplier := new Supplier("mac", -5, 0);
+		supplier2: Supplier := new Supplier("pizza", -5, 5);
+
+		product1: Product := new Product("burguer", 1);
+		product2: Product := new Product("pizza", 2);
+
+operations
+
+-- Tests a client Creation
+private testCreateClient: () ==> ()
+	testCreateClient() ==
+	(
+ 		dcl client: Client := new Client("x", 0 ,0);
+ 		assertEqual(client.getName(), "x");
+ 		assertEqual(client.getBalance(), 5);
+ 		assertEqual(client.location.getX(), 0);
+ 		assertEqual(client.location.getY(), 0);
+ 		
+ 		client.setLocation(new Location(3,4));
+ 		assertEqual(client.location.getX(), 3);
+ 		assertEqual(client.location.getY(), 4);
+ 	);
+ 	
+-- Tests clients different ids
+private testClientID: () ==> ()
+	testClientID() ==
+	(
+		dcl x: Client := new Client("carolina", 0, 0),
+			y: Client := new Client("joao", 5, 0);
+		assertTrue(x.getID() < y.getID());
+		assertTrue(not Client`equals(x,y));
+	);
+	
+-- Tests movements in a clients account
+private testClientBalance: () ==> ()
+	testClientBalance() ==
+	(
+		dcl client: Client := new Client("carolina", 0, 0),
+				pr: Product := new Product("mota", 1);
+		client.credit(15);
+ 		assertEqual(client.getBalance(), 20);
+		client.debit(5);
+		assertEqual(client.getBalance(), 15);
+	 	pr.increaseQuantity(4);
+	 	
+		assertTrue(client.checkCredit({pr}, 2));
+		
+		client.pay({pr}, 2);
+		assertEqual(client.getBalance(), 8);
+		
+		client.refund({pr});
+		assertEqual(client.getBalance(), 13);
+		
+		client.refund({pr});
+		assertEqual(client.getBalance(), 20);
+	);
+	
+-- Tests related to the client class
+private testClientClass: () ==> ()
+	testClientClass() ==
+	(
+		testCreateClient();
+		testClientID();
+		testClientBalance();
+	);
+
+-- Tests related to the product class
+private testProductClass: () ==> ()
+	testProductClass() ==
+	(
+		dcl pr: Product := new Product("mota", 1);
+		assertTrue(pr.getName() = "mota");
+ 		assertEqual(pr.getQuantity(), 1);
+ 		assertEqual(pr.getPrice(), 1);
+ 		pr.increaseQuantity(5);
+ 		assertEqual(pr.getQuantity(), 6);
+ 		pr.decreaseQuantity(3);
+ 		assertEqual(pr.getQuantity(), 3);
+ 		pr.setPrice(5.6);
+ 		assertTrue(pr.getPrice() = 5.6);
+ 		assertEqual(pr.totalCost(), 5.6*3);
+	);
+	
+-- Tests related to the Transport Class
+private testTransportClass: () ==> ()
+	testTransportClass() ==
+	(
+		dcl transport: Transport := new Transport("mota", 1, 1);
+		assertTrue(transport.getName() = "mota");
+ 		assertEqual(transport.getLocation().getX(), 0);
+ 		assertEqual(transport.getLocation().getY(), 0);
+ 		
+ 		transport.setLocation(new Location(3,4));
+ 		assertEqual(transport.getLocation().getX(), 3);
+ 		assertEqual(transport.getLocation().getY(), 4);
+	);
+	
+-- Tests related to the Transport Class
+private testSupplierClass: () ==> ()
+	testSupplierClass() ==
+	(
+		dcl sr: Supplier := new Supplier("pizza", -5, 5),
+		pr1: Product := new Product("burguer", 1),
+		pr2: Product := new Product("pizza", 2);
+		
+		assertTrue(sr.getName() = "pizza");
+ 		assertEqual(sr.getLocation().getX(), -5);
+ 		assertEqual(sr.getLocation().getY(), 5);
+ 		assertEqual(sr.getProducts(), {});
+ 		
+ 		sr.addProduct(pr1);
+ 		assertEqual(sr.getProducts(), {pr1});
+		sr.addProduct(pr1);
+ 		assertEqual(sr.getProducts(), {pr1}); 		
+ 		sr.addProduct(pr2);
+ 		assertEqual(sr.getProducts(), {pr1, pr2});
+ 		
+ 		assertEqual(sr.getProductsByName("burguer"), {pr1});
+ 		sr.setPrice("burguer", 5);
+ 		pr1.setPrice(5);
+ 		assertEqual(sr.getProductsByName("burguer"), {pr1});
+ 		sr.removeProduct(pr1);
+ 		assertEqual(sr.getProducts(), {pr2});
+		
+		sr.setLocation(new Location(3,4));
+ 		assertEqual(sr.getLocation().getX(), 3);
+ 		assertEqual(sr.getLocation().getY(), 4);
+	);
+	
+functions
+	
+traces
+	
+end GlovoTest
