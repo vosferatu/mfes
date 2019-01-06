@@ -14,7 +14,6 @@ instance variables
 		
 		inv not exists c1, c2 in set clients &
 					c1 <> c2 and c1.id = c2.id;
-		inv card clients > 0;
 
 operations
 public Glovo: () ==> Glovo
@@ -32,23 +31,98 @@ public removeTransport: Transport ==> ()
 		removeTransport(tr) ==
 		transports := transports \ {tr}
 		pre tr in set transports;
+
+-- Returns the Transports available
+public getTransports: () ==> set of Transport
+		getTransports() ==
+		return transports;
+
+-- Get the best transport
+public chooseBestTransport : Supplier ==> [Transport] 
+	chooseBestTransport(supplier) == (
+		dcl best:[Transport] := nil;
 		
--- Adds a delivery
-public addDelivery: Delivery ==> ()
-		addDelivery(delivery) == orders := orders union {delivery}
-		pre delivery not in set orders
-		post orders = orders~ union {delivery};
+		for all transport in set transports do
+					if best = nil or Location`dist(supplier.getLocation(), transport.getLocation()) >
+									 Location`dist(supplier.getLocation(), best.getLocation()) then
+								best := transport;
+
+		return best;
+	);
+
+-- Returns clients
+pure public getClients: () ==> set of Client
+		getClients() ==
+		return clients;
 		
+-- Adds a client to the system
+public addClient :Client ==> ()
+		addClient(c) == 
+		clients := clients union {c}
+		pre not exists client in set clients & Client`equals(client, c)
+		post c in set clients;
+
+-- Removes a client to the system
+public removeClient : Client ==> ()
+		removeClient(c) ==
+		(
+			for all client in set clients do
+				if Client`equals(client, c) 
+				then clients := clients \ {client};
+		)
+		pre exists client in set clients & Client`equals(client, c)
+		post not exists client in set clients & Client`equals(client, c);
+
+-- Gets Client by ID
+public getClientByID : int ==> [Client]
+		getClientByID(id) ==
+		(
+				dcl target:[Client] := nil;
+				for all client in set clients do
+						if client.id = id then target := client;
+				return target;
+		);
+
+-- Returns a client by its name	
+public getClientByName : String ==> set of Client 
+		getClientByName(name) ==
+		return {client | client in set clients & client.textSearch(name)};
+		
+		
+-- Returns the suppliers
+public getSuppliers: () ==> map String to Supplier
+		getSuppliers() ==
+		return suppliers;
+		
+-- Adds a supplier to the system
+public addSupplier : Supplier ==> ()
+	addSupplier(supplier) == suppliers := suppliers munion {supplier.getName() |-> supplier}
+	pre supplier.getName() not in set dom suppliers
+	post suppliers = suppliers~ munion {supplier.getName() |-> supplier};
+
 -- Returns a list of suppliers by name
 public getSupplierByName: String ==> Supplier
 		getSupplierByName(name) == 
 		return suppliers(name)
 		pre name in set dom suppliers;
 
--- Returns clients
-pure public getClients: () ==> set of Client
-		getClients() ==
-		return clients;
+-- Remove a supplier
+public removeSupplier : String ==> ()
+		removeSupplier(name) ==
+		(
+				for all order in set orders do
+				 	if order.status <> <Client> and order.supplier.getName() = name then
+				 			return;
+				 
+				suppliers :=  {name}<-:suppliers;
+		)
+		pre name in set dom suppliers;
+
+-- Adds a delivery
+public addDelivery: Delivery ==> ()
+		addDelivery(delivery) == orders := orders union {delivery}
+		pre delivery not in set orders
+		post orders = orders~ union {delivery};
 
 -- Returns waiting deliveries
 public pure getDeliveryToDo: () ==> set of Delivery 
@@ -65,53 +139,6 @@ public getDeliveryDoing: () ==> set of Delivery
 		getDeliveryDoing() ==
 		return {order | order in set orders & order.doing()};
 
--- Returns the Transports available
-public getTransports: () ==> set of Transport
-		getTransports() ==
-		return transports;
-		
--- Returns the suppliers
-public getSuppliers: () ==> map String to Supplier
-		getSuppliers() ==
-		return suppliers;
-		
--- Adds a client to the system
-public addClient :Client ==> ()
-		addClient(c) == 
-		clients := clients union {c}
-			pre not exists client in set clients & Client`equals(client, c)
-post c in set clients;
-
--- Removes a client to the system
-public removeClient : Client ==> ()
-		removeClient(c) ==
-		(
-			for all client in set clients do
-				if Client`equals(client, c) 
-				then clients := clients \ {client};
-		)
-			pre exists client in set clients & Client`equals(client, c)
-post not exists client in set clients & Client`equals(client, c);
-
--- Adds a supplier to the system
-public addSupplier : Supplier ==> ()
-	addSupplier(supplier) == suppliers := suppliers munion {supplier.getName() |-> supplier}
-	pre supplier.getName() not in set dom suppliers
-	post suppliers = suppliers~ munion {supplier.getName() |-> supplier};
-
--- Get the best transport
-public chooseBestTransport : Supplier ==> [Transport] 
-	chooseBestTransport(supplier) == (
-		dcl best:[Transport] := nil;
-		
-		for all transport in set transports do
-					if best = nil or Location`dist(supplier.getLocation(), transport.getLocation()) >
-									 Location`dist(supplier.getLocation(), best.getLocation()) then
-								best := transport;
-
-		return best;
-	);
-
 -- Place an order
 public order : Client * Supplier * set of Product ==> ()
 	order(client, supplier, products) == (
@@ -123,16 +150,6 @@ public order : Client * Supplier * set of Product ==> ()
 		removeTransport(transport);
 	)
 	pre client.checkCredit(products, FEE);
-	
--- Gets Client by ID
-public getClientByID : int ==> Client
-		getClientByID(id) ==
-		(
-				dcl target:Client;
-				for all client in set clients do
-						if client.id = id then target := client;
-				return target;
-		);
 
 -- Remove order
 public removeOrder : Delivery ==> ()
@@ -190,22 +207,6 @@ public meetClient : Delivery ==> ()
 						);
 		)
 		pre deli in set {order | order in set orders & order.status = <Supplier>};
-		
--- Remove a supplier
-public removeSupplier : String ==> ()
-		removeSupplier(name) ==
-		(
-				for all order in set orders do
-				 	if order.status <> <Client> and order.supplier.getName() = name then
-				 			return;
-				 
-				suppliers :=  {name}<-:suppliers;
-		)
-		pre name in set dom suppliers;
-		
-public getClientByName : String ==> set of Client 
-		getClientByName(name) ==
-		return {client | client in set clients & client.textSearch(name)};
 
 functions
 

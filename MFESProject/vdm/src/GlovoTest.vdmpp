@@ -198,6 +198,142 @@ private testDeliveryClass: () ==> ()
 		
 	);
 	
+-- Tests related to Transport in Glovo
+public testTransportGlovo: () ==> ()
+		testTransportGlovo() ==
+		(
+				dcl glovo:Glovo := new Glovo(),
+					a:Transport := new Transport("mota",5,0),
+					b:Transport := new Transport("bicla", 2, 0),
+					sr: Supplier := new Supplier("pizza", 0, 0);
+				
+				assertEqual(glovo.getTransports(), {});
+				glovo.addTransport(a);
+				assertEqual(glovo.getTransports(), {a});
+				glovo.addTransport(b);
+				assertEqual(glovo.getTransports(), {a,b});
+				glovo.removeTransport(a);
+				assertEqual(glovo.getTransports(), {b});
+				
+				glovo.addTransport(a);
+				assertEqual(glovo.chooseBestTransport(sr), a);
+				
+		);
+		
+-- Tests related to Client in Glovo
+public testClientGlovo: () ==> ()
+		testClientGlovo() ==
+		(
+				dcl glovo:Glovo := new Glovo(),
+					a:Client := new Client("a",5,0),
+					b:Client := new Client("b", 2, 0);
+									
+				assertEqual(glovo.getClients(), {});
+				glovo.addClient(a);
+				assertEqual(glovo.getClients(), {a});
+				glovo.addClient(b);
+				assertEqual(glovo.getClients(), {a,b});
+				glovo.removeClient(a);
+				assertEqual(glovo.getClients(), {b});
+				
+				glovo.addClient(a);
+				assertEqual(glovo.getClientByID(1), nil); --static
+				assertEqual(glovo.getClientByID(a.getID()), a);
+				assertEqual(glovo.getClientByID(b.getID()), b);
+				 
+				assertEqual(glovo.getClientByName("a"), {a});
+		);
+		
+-- Tests related to Supplier in Glovo
+public testSupplierGlovo: () ==> ()
+		testSupplierGlovo() ==
+		(
+				dcl glovo:Glovo := new Glovo(),
+					sr1:Supplier := new Supplier("a",5,0),
+					sr2:Supplier := new Supplier("b", 2, 0),
+					sr3:Supplier := new Supplier("c", 3, 0),
+					pr1:Product := new Product("burguer", 2),
+					cli:Client := new Client("a",0,0),
+					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr3);
+									
+				assertEqual(glovo.getSuppliers(), {|->});
+				glovo.addSupplier(sr1);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1});
+				glovo.addSupplier(sr2);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1,sr2.getName() |-> sr2});
+
+				assertEqual(glovo.getSupplierByName("a"), sr1);
+				assertEqual(glovo.getSupplierByName("b"), sr2);
+				
+				glovo.removeSupplier("a");
+				assertTrue("a" not in set dom glovo.getSuppliers());
+				
+				assertEqual(glovo.orders, {});
+				glovo.addDelivery(deli);
+				assertEqual(glovo.getDeliveryToDo(), {deli});
+				assertEqual(glovo.getDeliveryDone(), {});
+				assertEqual(glovo.getDeliveryDoing(), {});
+				
+				--glovo.removeSupplier("c"); breaks pre-condition -> not in set
+				glovo.addSupplier(sr3);
+				assertTrue("c" in set dom glovo.getSuppliers());
+		);
+		
+-- Tests related to Order in Glovo
+public testOrderGlovo: () ==> ()
+		testOrderGlovo() ==
+		(
+				dcl glovo:Glovo := new Glovo(),
+					sr1:Supplier := new Supplier("a",5,0),
+					sr2:Supplier := new Supplier("b", 2, 0),
+					sr3:Supplier := new Supplier("c", 3, 0),
+					pr1:Product := new Product("burguer", 2),
+					cli:Client := new Client("a",0,0),
+					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr3);
+									
+				assertEqual(glovo.getSuppliers(), {|->});
+				glovo.addSupplier(sr1);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1});
+				glovo.addSupplier(sr2);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1,sr2.getName() |-> sr2});
+
+				assertEqual(glovo.getSupplierByName("a"), sr1);
+				assertEqual(glovo.getSupplierByName("b"), sr2);
+				
+				glovo.removeSupplier("a");
+				assertTrue("a" not in set dom glovo.getSuppliers());
+				
+				assertEqual(glovo.orders, {});
+				glovo.addDelivery(deli);
+				assertEqual(glovo.getDeliveryToDo(), {deli});
+				assertEqual(glovo.getDeliveryDone(), {});
+				assertEqual(glovo.getDeliveryDoing(), {});
+				
+				--glovo.removeSupplier("c"); breaks pre-condition -> not in set
+				glovo.addSupplier(sr3);
+				assertTrue("c" in set dom glovo.getSuppliers());
+		);
+		
+public testGlovoClass: () ==> ()
+		testGlovoClass() ==
+		(
+			IO`print("testTransportGlovo -> ");
+			testTransportGlovo();
+			IO`println("Success");
+			
+			IO`print("testClientGlovo -> ");			
+			testClientGlovo();
+			IO`println("Success");
+			
+			IO`print("testSupplierGlovo -> ");			
+			testSupplierGlovo();
+			IO`println("Success");
+			
+			IO`print("testOrderGlovo -> ");			
+			testOrderGlovo();
+			IO`println("Success");
+		);
+	
 public static main: () ==> ()
 main() ==
 (
@@ -225,6 +361,10 @@ main() ==
 		
 		IO`print("testDeliveryClass -> ");
 		glovoTest.testDeliveryClass();
+		IO`println("Success");
+		
+		IO`print("testGlovoClass -> ");
+		glovoTest.testGlovoClass();
 		IO`println("Success");
 		
 );

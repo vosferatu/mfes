@@ -32,7 +32,7 @@ public pure getName : () ==> String
 		return name;
 
 -- Returns user ID
-public getID: () ==> nat
+public getID: () ==> int
 		getID() ==
 		return id;
 
