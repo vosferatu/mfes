@@ -52,6 +52,11 @@ public setPrice : real ==> ()
 	setPrice(newPrice) ==
 	price := newPrice
 	post newPrice = price;
+	
+-- Total cost of the product
+pure public totalCost : () ==> real
+	totalCost() ==
+	return quantity * price;
 
 functions
 

@@ -53,6 +53,11 @@ public setPrice : String * real ==> ()
 	setPrice(productName, price) ==
 	for all product in set getProductsByName(productName) do
 		product.setPrice(price);
+		
+-- Returns transport Location
+public pure getLocation : () ==> Location
+		getLocation() ==
+		return location;
 
 functions
 

@@ -17,16 +17,21 @@ Location(i,j) == (
 );
 
 -- Returns x
-public pure getX : () ==> int
+public getX : () ==> int
 		getX() == 
 		return x;
 
 -- Returns y
-public pure getY : () ==> int
+public getY : () ==> int
 		getY() == 
 		return y;
-		
+
 functions
+
+-- evaluates distance between points
+public dist: Location * Location -> real
+	dist(a,b) ==
+	((b.x-a.x)*(b.x-a.x))+((b.y-a.y)*(b.y-a.y));
 
 traces
 

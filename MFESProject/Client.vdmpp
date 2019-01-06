@@ -10,7 +10,6 @@ instance variables
 		public static clientID: int := 0;
 		public id : int := clientID;
 		balance: real;
-		basket: seq of Product :=[];
 		location: Location;
 		
 operations
@@ -35,11 +34,6 @@ public getID: () ==> nat
 		getID() ==
 		return id;
 
--- Returns user basket
-public getBasket: () ==> seq of Product
-		getBasket() ==
-		return basket;
-
 -- Returns user balance
 public getBalance: () ==> real
 		getBalance() ==
@@ -59,6 +53,45 @@ public debit : real ==> ()
 	pre (balance - amount) >= 0 and amount > 0
 	post balance~ = balance + amount;
 
+-- Checks if user has enough credit
+pure public checkCredit : set of Product * rat ==> bool
+		checkCredit(list, fee) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			return balance > sum + fee;
+		)
+		pre list <> {};
+		
+-- Pay for products
+public pay : set of Product * rat ==> ()
+		pay(list, fee) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			if balance > sum + fee then debit(sum+fee);
+		)
+		pre list <> {};
+		
+-- Refund for products
+public refund : set of Product ==> ()
+		refund(list) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			credit(sum);
+		)
+		pre list <> {};
+
 functions
 
 -- Compares 2 clients by ID
@@ -67,5 +100,5 @@ public equals : Client * Client -> bool
 	c1.id = c2.id;
 
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Client

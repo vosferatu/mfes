@@ -21,7 +21,12 @@ Transport(transportName, x, y) == (
 public pure getName : () ==> String
 		getName() == 
 		return name;
-		
+
+-- Returns transport Location
+public pure getLocation : () ==> Location
+		getLocation() ==
+		return location;
+	
 functions
 
 traces

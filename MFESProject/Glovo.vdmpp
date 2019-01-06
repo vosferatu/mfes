@@ -1,50 +1,80 @@
 class Glovo
 
 types
--- TODO Define types here
+String = seq of char;
+
 values
--- TODO Define values here
+FEE = 1.9;
+
 instance variables
 		clients: set of Client :={};
 		orders: set of Delivery :={};
-		suppliers: set of Supplier :={};
+		suppliers: map String to Supplier :={|->};
 		transports: set of Transport :={};
 		
-operations
+		inv not exists c1, c2 in set clients &
+					c1 <> c2 and c1.id = c2.id;
 
+operations
 public Glovo: () ==> Glovo
 		Glovo() == return self;
 
+-- Adds a transport
+public addTransport: Transport ==> ()
+		addTransport(transport) == transports := transports union {transport}
+		pre transport not in set transports
+		post transports = transports~ union {transport};
+		
+-- Adds a delivery
+public addDelivery: Delivery ==> ()
+		addDelivery(delivery) == orders := orders union {delivery}
+		pre delivery not in set orders
+		post orders = orders~ union {delivery};
+		
+-- Returns a list of suppliers by name
+--public getSupplierByName : String ==> Supplier
+--		getSupplierByName(name) == 
+--		return suppliers(name)
+--		pre name in set dom suppliers;
+
+-- Returns clients
 pure public getClients: () ==> set of Client
 		getClients() ==
 		return clients;
 
-public getDeliveryToDo: () ==> set of Delivery 
+-- Returns waiting deliveries
+public pure getDeliveryToDo: () ==> set of Delivery 
 		getDeliveryToDo() ==
 		return {order | order in set orders & order.status = <Null>};
 
+-- Returns done deliveries
 public getDeliveryDone: () ==> set of Delivery 
 		getDeliveryDone() ==
 		return {order | order in set orders & order.status = <Client>};		
 		
-public getdeliveryDoing: () ==> set of Delivery 
-		getdeliveryDoing() ==
-		return {order | order in set orders & order.doing()};		
+-- Returns undergoing deliveries
+public getDeliveryDoing: () ==> set of Delivery 
+		getDeliveryDoing() ==
+		return {order | order in set orders & order.doing()};
 
+-- Returns the Transports available
 public getTransports: () ==> set of Transport
 		getTransports() ==
 		return transports;
 		
-public getSuppliers: () ==> set of Supplier
+-- Returns the suppliers
+public getSuppliers: () ==> map String to Supplier
 		getSuppliers() ==
 		return suppliers;
-	
+		
+-- Adds a client to the system
 public addClient :Client ==> ()
 		addClient(c) == 
 		clients := clients union {c}
 			pre not exists client in set clients & Client`equals(client, c)
 post c in set clients;
 
+-- Removes a client to the system
 public removeClient : Client ==> ()
 		removeClient(c) ==
 		(
@@ -54,7 +84,73 @@ public removeClient : Client ==> ()
 		)
 			pre exists client in set clients & Client`equals(client, c)
 post not exists client in set clients & Client`equals(client, c);
+
+-- Adds a supplier to the system
+public addSupplier : Supplier ==> ()
+	addSupplier(supplier) == suppliers := suppliers munion {supplier.getName() |-> supplier}
+	pre supplier.getName() not in set dom suppliers
+	post suppliers = suppliers~ munion {supplier.getName() |-> supplier};
+
+-- Get the best transport
+public chooseBestTransport : Supplier ==> [Transport] 
+	chooseBestTransport(supplier) == (
+		dcl best:[Transport] := nil;
 		
+		for all transport in set transports do
+					if best = nil or Location`dist(supplier.getLocation(), transport.getLocation()) >
+									 Location`dist(supplier.getLocation(), best.getLocation()) then
+								best := transport;
+
+		return best;
+	);
+
+-- Place an order
+public order : Client * Supplier * set of Product ==> ()
+	order(client, supplier, products) == (
+		dcl transport:[Transport] := chooseBestTransport(supplier);
+		
+		if client.checkCredit(products, FEE) then client.pay(products, FEE);
+		
+		addDelivery(new Delivery(client.id, products, transport, supplier));
+	)
+	pre client.checkCredit(products, FEE);
+	
+-- Gets Client by ID
+public getClientByID : int ==> Client
+		getClientByID(id) ==
+		(
+				dcl target:Client;
+				for all client in set clients do
+						if client.id = id then target := client;
+				return target;
+		);
+
+-- Remove order
+public removeOrder : Delivery ==> ()
+		removeOrder(deli) == 
+		(
+			orders := orders \ {deli};
+			
+			if deli in set getDeliveryToDo() then getClientByID(deli.userID).refund(deli.getProducts())
+		)
+		pre deli in set getDeliveryToDo();
+		
+public editOrder : Delivery * set of Product ==> ()
+		editOrder(deli, prod) ==
+		(
+			if deli in set getDeliveryToDo() 
+				then (
+						getClientByID(deli.userID).refund(deli.getProducts());
+						);
+			
+			if(getClientByID(deli.userID).checkCredit(prod, FEE))
+				then (	
+					getClientByID(deli.userID).pay(prod, FEE);
+					deli.setProducts(prod);
+				);
+		)
+		pre deli in set getDeliveryToDo();
+
 functions
 
 traces

@@ -6,39 +6,59 @@ public Status = <Null> | <Transport> | <Supplier> | <Client>
 values
 
 instance variables
+		public userID : int;
+		supplier: Supplier;
 		products: set of Product :={};
 		transport: [Transport];
 		public status: Status;
 
 operations
-public Delivery: set of Product * [Transport]  ==> Delivery
-		Delivery(p,t) == (
+public Delivery: int * set of Product * [Transport] * Supplier ==> Delivery
+		Delivery(id, p,t, s) == (
+			userID := id;
 			products := p;
+			supplier := s;
 			transport := t;
 			status := <Null>;
 			if(t <> nil) then status := <Transport>;
 			return self
 		);
 
+-- Returns the delivery products
 pure public getProducts: () ==> set of Product
 		getProducts()  ==
 return products;
 
+-- Changes the delivery products
+public setProducts: set of Product ==> ()
+		setProducts(prod)  ==
+			products := prod
+		pre prod <> {};
+
+-- Returns the current transport
 pure public getTransport: () ==> [Transport]
 		getTransport() ==
 return transport;
 
+-- Returns the supplier
+pure public getSupplier: () ==> Supplier
+		getSupplier() ==
+return supplier;
+
+-- Sets a transport for the delivery
 public setTransport: Transport ==> ()
 		setTransport(t) == (
 			transport := t;
 			status := <Transport>;
 		)
 		post status = <Transport>;
-		
+
+-- Returns if delivery is underway
 public doing: () ==> bool
 		doing() ==
 		return status = <Supplier> or status = <Transport>;
 
+-- Updates the Delivery State
 public update: () ==> ()
 		update() ==
 		(
@@ -46,8 +66,8 @@ public update: () ==> ()
 					<Transport> -> status := <Supplier>,
 					<Supplier> -> status := <Client>
 			end
-		)
-		
+		);
+
 functions
 
 traces
