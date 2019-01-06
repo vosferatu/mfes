@@ -1,7 +1,7 @@
 class Glovo
 
 types
-String = seq of char;
+public String = seq of char;
 
 values
 FEE = 1.9;
@@ -14,6 +14,7 @@ instance variables
 		
 		inv not exists c1, c2 in set clients &
 					c1 <> c2 and c1.id = c2.id;
+		inv card clients > 0;
 
 operations
 public Glovo: () ==> Glovo
@@ -39,10 +40,10 @@ public addDelivery: Delivery ==> ()
 		post orders = orders~ union {delivery};
 		
 -- Returns a list of suppliers by name
---public getSupplierByName : String ==> Supplier
---		getSupplierByName(name) == 
---		return suppliers(name)
---		pre name in set dom suppliers;
+public getSupplierByName: String ==> Supplier
+		getSupplierByName(name) == 
+		return suppliers(name)
+		pre name in set dom suppliers;
 
 -- Returns clients
 pure public getClients: () ==> set of Client

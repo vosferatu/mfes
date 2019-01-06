@@ -11,7 +11,10 @@ instance variables
 		products: set of Product :={};
 		public transport: [Transport];
 		public status: Status;
-
+		
+		inv status <> nil;
+		inv userID > 0;
+	
 operations
 public Delivery: int * set of Product * [Transport] * Supplier ==> Delivery
 		Delivery(id, p,t, s) == (

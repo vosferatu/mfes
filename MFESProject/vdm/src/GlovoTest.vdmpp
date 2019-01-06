@@ -175,7 +175,7 @@ private testDeliveryClass: () ==> ()
 		assertEqual(deli2.getProducts(), {pr1,pr2});
 		deli1.setProducts({pr1,pr2});
 		assertEqual(deli1.getProducts(), {pr1,pr2});
-		
+
 		assertEqual(deli1.getTransport(), nil);
 		assertEqual(deli2.getTransport(), tr1);
 		assertEqual(deli1.status, <Null>);

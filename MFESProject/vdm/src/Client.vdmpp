@@ -12,6 +12,8 @@ instance variables
 		balance: real;
 		public location: Location;
 		
+		inv balance >= 0;
+		
 operations
 
 public Client: String * int * int ==> Client
