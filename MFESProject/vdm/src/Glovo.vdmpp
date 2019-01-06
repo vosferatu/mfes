@@ -190,6 +190,22 @@ public meetClient : Delivery ==> ()
 						);
 		)
 		pre deli in set {order | order in set orders & order.status = <Supplier>};
+		
+-- Remove a supplier
+public removeSupplier : String ==> ()
+		removeSupplier(name) ==
+		(
+				for all order in set orders do
+				 	if order.status <> <Client> and order.supplier.getName() = name then
+				 			return;
+				 
+				suppliers :=  {name}<-:suppliers;
+		)
+		pre name in set dom suppliers;
+		
+public getClientByName : String ==> set of Client 
+		getClientByName(name) ==
+		return {client | client in set clients & client.textSearch(name)};
 
 functions
 

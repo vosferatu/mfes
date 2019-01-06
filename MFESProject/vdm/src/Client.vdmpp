@@ -98,6 +98,31 @@ public setLocation : Location ==> ()
 		setLocation(loc) ==
 				location := loc;
 
+-- Search for name
+public textSearch : seq of char ==> bool
+textSearch(q) == (
+	dcl tmp: seq of char := name;
+	dcl match: bool := false;
+	
+	while len tmp >= len q and not match do(
+		match := true;
+		
+		for index = 1 to len q do
+			if match and q(index) <> tmp(index) then (
+				match := false;
+			);
+		
+		if match then
+			return true
+		else (
+			tmp := tl tmp;
+			match := false;
+		);
+	);
+	return false;
+)		
+pre len q > 0;
+
 functions
 
 -- Compares 2 clients by ID
