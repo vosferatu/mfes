@@ -243,10 +243,31 @@ public testClientGlovo: () ==> ()
 				 
 				assertEqual(glovo.getClientByName("a"), {a});
 		);
-		
+
 -- Tests related to Supplier in Glovo
 public testSupplierGlovo: () ==> ()
 		testSupplierGlovo() ==
+		(
+				dcl glovo:Glovo := new Glovo(),
+					sr1:Supplier := new Supplier("1", 0, 0),
+					sr2:Supplier := new Supplier("2", 0, 0);
+									
+				assertEqual(glovo.getSuppliers(), {|->});
+				glovo.addSupplier(sr1);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1});
+				glovo.addSupplier(sr2);
+				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1,sr2.getName() |-> sr2});
+
+				assertEqual(glovo.getSupplierByName("1"), sr1);
+				assertEqual(glovo.getSupplierByName("2"), sr2);
+				
+				glovo.removeSupplier("1");
+				assertTrue("1" not in set dom glovo.getSuppliers());
+);
+
+-- Tests related to Delivery in Glovo
+public testDeliveryGlovo: () ==> ()
+		testDeliveryGlovo() ==
 		(
 				dcl glovo:Glovo := new Glovo(),
 					sr1:Supplier := new Supplier("a",5,0),
@@ -254,8 +275,10 @@ public testSupplierGlovo: () ==> ()
 					sr3:Supplier := new Supplier("c", 3, 0),
 					pr1:Product := new Product("burguer", 2),
 					cli:Client := new Client("a",0,0),
-					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr3);
-									
+					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr2),
+					tr1:Transport := new Transport("mota",0 ,0);
+					
+				glovo.addClient(cli);				
 				assertEqual(glovo.getSuppliers(), {|->});
 				glovo.addSupplier(sr1);
 				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1});
@@ -273,7 +296,22 @@ public testSupplierGlovo: () ==> ()
 				assertEqual(glovo.getDeliveryToDo(), {deli});
 				assertEqual(glovo.getDeliveryDone(), {});
 				assertEqual(glovo.getDeliveryDoing(), {});
+				assertEqual(glovo.getClientDeliveries(cli), {deli});
 				
+				for all order in set glovo.orders
+						do order.setTransport(tr1);
+						
+				assertEqual(glovo.getDeliveryDoing(), {deli});
+				
+				for all order in set glovo.orders
+						do order.update(); --Supplier status
+						
+				glovo.removeSupplier("b");
+				
+				for all order in set glovo.orders
+						do order.update(); --Client status
+						
+				assertEqual(glovo.getDeliveryDone(), {deli});
 				--glovo.removeSupplier("c"); breaks pre-condition -> not in set
 				glovo.addSupplier(sr3);
 				assertTrue("c" in set dom glovo.getSuppliers());
@@ -283,35 +321,127 @@ public testSupplierGlovo: () ==> ()
 public testOrderGlovo: () ==> ()
 		testOrderGlovo() ==
 		(
+				(
 				dcl glovo:Glovo := new Glovo(),
 					sr1:Supplier := new Supplier("a",5,0),
-					sr2:Supplier := new Supplier("b", 2, 0),
-					sr3:Supplier := new Supplier("c", 3, 0),
 					pr1:Product := new Product("burguer", 2),
 					cli:Client := new Client("a",0,0),
-					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr3);
-									
-				assertEqual(glovo.getSuppliers(), {|->});
+					tr1:Transport := new Transport("mota",0,0);
+					
+				cli.credit(50);
+				glovo.addClient(cli);
+				sr1.addProduct(pr1);		
 				glovo.addSupplier(sr1);
-				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1});
-				glovo.addSupplier(sr2);
-				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1,sr2.getName() |-> sr2});
-
-				assertEqual(glovo.getSupplierByName("a"), sr1);
-				assertEqual(glovo.getSupplierByName("b"), sr2);
+				glovo.addTransport(tr1);
 				
-				glovo.removeSupplier("a");
-				assertTrue("a" not in set dom glovo.getSuppliers());
+				assertEqual(glovo.getClientDeliveries(cli), {});
+				glovo.order(cli, sr1, {pr1});
+				assertTrue(card glovo.getClientDeliveries(cli) = 1);
+				assertEqual(glovo.getTransports(), {});
+				);
+				(
+					dcl glovo:Glovo := new Glovo(),
+					sr1:Supplier := new Supplier("a",5,0),
+					pr1:Product := new Product("burguer", 2),
+					cli:Client := new Client("a",0,0),
+					tr1:Transport := new Transport("mota",0,0);
+					
+				cli.credit(50);
+				sr1.addProduct(pr1);
+				glovo.addClient(cli);
+				glovo.addSupplier(sr1);
+				glovo.addTransport(tr1);
 				
-				assertEqual(glovo.orders, {});
-				glovo.addDelivery(deli);
-				assertEqual(glovo.getDeliveryToDo(), {deli});
-				assertEqual(glovo.getDeliveryDone(), {});
-				assertEqual(glovo.getDeliveryDoing(), {});
+				assertEqual(glovo.getClientDeliveries(cli), {});
+				--glovo.order(cli, sr1, {pr1});   -- case where Glovo::line165 breaks precondition, so, not getting coverage
+				--assertTrue(card glovo.getClientDeliveries(cli) = 1);
+				--assertEqual(glovo.getTransports(), {});
+				);
+				(
+					dcl glovo:Glovo := new Glovo(),
+					sr1:Supplier := new Supplier("a",5,0),
+					pr1:Product := new Product("burguer", 2),
+					cli:Client := new Client("a",0,0);
+					
+				cli.credit(50);
+				sr1.addProduct(pr1);
+				glovo.addClient(cli);
+				glovo.addSupplier(sr1);
 				
-				--glovo.removeSupplier("c"); breaks pre-condition -> not in set
-				glovo.addSupplier(sr3);
-				assertTrue("c" in set dom glovo.getSuppliers());
+				assertEqual(glovo.getClientDeliveries(cli), {});
+				glovo.order(cli, sr1, {pr1});
+				assertTrue(card glovo.getClientDeliveries(cli) = 1);
+				
+				for all order in set glovo.orders
+						do glovo.removeOrder(order);
+				assertTrue(card glovo.getClientDeliveries(cli) = 0);
+				);
+				(
+				dcl glovo:Glovo := new Glovo(),
+					sr2:Supplier := new Supplier("b", 2, 0),
+					pr1:Product := new Product("burguer", 2),
+					pr2:Product := new Product("pizza", 20),
+					cli:Client := new Client("a",0,0),
+					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr2);					
+					
+					cli.credit(50);
+					glovo.addClient(cli);				
+					glovo.addSupplier(sr2);
+				
+					assertEqual(glovo.orders, {});
+					glovo.addDelivery(deli);
+					assertEqual(glovo.getDeliveryToDo(), {deli});
+					
+					glovo.editOrder(deli,{pr2});
+					assertEqual(deli.getProducts(), {pr2});
+					
+				);
+				(
+				dcl glovo:Glovo := new Glovo(),
+					sr2:Supplier := new Supplier("b", 2, 0),
+					pr1:Product := new Product("burguer", 2),
+					pr2:Product := new Product("pizza", 20),
+					cli:Client := new Client("a",0,0),
+					deli:Delivery := new Delivery(cli.getID(),{pr1},nil,sr2);					
+					
+					glovo.addClient(cli);				
+					glovo.addSupplier(sr2);
+				
+					assertEqual(glovo.orders, {});
+					glovo.addDelivery(deli);
+					assertEqual(glovo.getDeliveryToDo(), {deli});
+					
+					glovo.editOrder(deli,{pr2});
+					assertEqual(glovo.orders, {});
+				);
+				(
+				dcl glovo:Glovo := new Glovo(),
+					sr2:Supplier := new Supplier("b", 2, 0),
+					pr1:Product := new Product("burguer", 2),
+					cli:Client := new Client("a",0,0),
+					tr1:Transport := new Transport("mota",0,0),
+					deli:Delivery := new Delivery(cli.getID(),{pr1},tr1,sr2);					
+					
+					glovo.addClient(cli);				
+					glovo.addSupplier(sr2);
+					sr2.addProduct(pr1);
+					glovo.addTransport(tr1);
+				
+					assertEqual(glovo.orders, {});
+					glovo.addDelivery(deli);
+					assertEqual(glovo.getDeliveryDoing(), {deli});
+					
+					glovo.meetSupplier(deli);
+					assertEqual(tr1.getLocation(), sr2.getLocation());
+					glovo.removeTransport(tr1);				
+					assertEqual(deli.status, <Supplier>);
+					assertEqual(glovo.getTransports(), {});
+					
+					glovo.meetClient(deli);
+					assertEqual(cli.location, tr1.getLocation());
+					assertEqual(deli.status, <Client>);	
+					assertEqual(card glovo.getTransports(), 1);
+				);
 		);
 		
 public testGlovoClass: () ==> ()
@@ -327,6 +457,10 @@ public testGlovoClass: () ==> ()
 			
 			IO`print("testSupplierGlovo -> ");			
 			testSupplierGlovo();
+			IO`println("Success");
+
+			IO`print("testDeliveryGlovo -> ");			
+			testDeliveryGlovo();
 			IO`println("Success");
 			
 			IO`print("testOrderGlovo -> ");			

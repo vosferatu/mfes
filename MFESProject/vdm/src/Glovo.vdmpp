@@ -110,11 +110,14 @@ public getSupplierByName: String ==> Supplier
 public removeSupplier : String ==> ()
 		removeSupplier(name) ==
 		(
+				dcl result:bool := false;
+				
 				for all order in set orders do
-				 	if order.status <> <Client> and order.supplier.getName() = name then
-				 			return;
+				 	if order.supplier.getName() = name and order.status <> <Client> then
+				 			result := true;
 				 
-				suppliers :=  {name}<-:suppliers;
+				if not result then
+					suppliers :=  {name}<-:suppliers;
 		)
 		pre name in set dom suppliers;
 
@@ -125,7 +128,7 @@ public addDelivery: Delivery ==> ()
 		post orders = orders~ union {delivery};
 
 -- Returns waiting deliveries
-public pure getDeliveryToDo: () ==> set of Delivery 
+public pure getDeliveryToDo: () ==> set of Delivery      
 		getDeliveryToDo() ==
 		return {order | order in set orders & order.status = <Null>};
 
@@ -138,6 +141,32 @@ public getDeliveryDone: () ==> set of Delivery
 public getDeliveryDoing: () ==> set of Delivery 
 		getDeliveryDoing() ==
 		return {order | order in set orders & order.doing()};
+		
+-- Returns clients deliveries
+public getClientDeliveries: Client ==> set of Delivery
+		getClientDeliveries(c) ==
+		(
+			dcl result:set of Delivery := {};
+			
+			for all order in set orders do
+					if order.userID = c.id
+							then result := result union {order};
+							
+			return result;
+		)
+		pre c in set clients;
+
+-- Checks if products are in supplier
+pure public checkSupplierProducts: Supplier * set of Product ==> bool
+	checkSupplierProducts(sup, prods) ==
+	(
+		for all product in set prods do
+				if product not in set sup.getProducts()
+					then return false; -- doesn't get coverage because breaks the precondition
+															-- coverage run would always stop here
+		return true;
+	)
+	pre prods <> {};
 
 -- Place an order
 public order : Client * Supplier * set of Product ==> ()
@@ -147,9 +176,10 @@ public order : Client * Supplier * set of Product ==> ()
 		if client.checkCredit(products, FEE) then client.pay(products, FEE);
 		
 		addDelivery(new Delivery(client.id, products, transport, supplier));
-		removeTransport(transport);
+		if transport <> nil 
+			then removeTransport(transport);
 	)
-	pre client.checkCredit(products, FEE);
+	pre client.checkCredit(products, FEE) and checkSupplierProducts(supplier, products);
 
 -- Remove order
 public removeOrder : Delivery ==> ()
@@ -157,11 +187,7 @@ public removeOrder : Delivery ==> ()
 		(
 			orders := orders \ {deli};
 			
-			if deli in set getDeliveryToDo() then 
-				(
-					getClientByID(deli.userID).refund(deli.getProducts());
-					addTransport(deli.transport);
-				)
+			getClientByID(deli.userID).refund(deli.getProducts());
 		)
 		pre deli in set getDeliveryToDo();
 		
@@ -169,10 +195,7 @@ public removeOrder : Delivery ==> ()
 public editOrder : Delivery * set of Product ==> ()
 		editOrder(deli, prod) ==
 		(
-			if deli in set getDeliveryToDo() 
-				then (
-						getClientByID(deli.userID).refund(deli.getProducts());
-						);
+			getClientByID(deli.userID).refund(deli.getProducts());
 			
 			if(getClientByID(deli.userID).checkCredit(prod, FEE))
 				then (	
@@ -187,11 +210,8 @@ public editOrder : Delivery * set of Product ==> ()
 public meetSupplier : Delivery ==> ()
 		meetSupplier(deli) ==
 		(
-			if deli in set getDeliveryToDo()
-				then (
-						deli.transport.setLocation(deli.supplier.getLocation());
-						deli.update();
-						);
+			deli.transport.setLocation(deli.supplier.getLocation());
+			deli.update();
 		)
 		pre deli in set {order | order in set orders & order.status = <Transport>};
 
@@ -199,12 +219,9 @@ public meetSupplier : Delivery ==> ()
 public meetClient : Delivery ==> ()
 		meetClient(deli) ==
 		(
-			if deli in set getDeliveryToDo()
-				then (
-						deli.transport.setLocation(getClientByID(deli.userID).location);
-						deli.update();
-						addTransport(deli.transport);
-						);
+			deli.transport.setLocation(getClientByID(deli.userID).location);
+			deli.update();
+			addTransport(deli.transport);
 		)
 		pre deli in set {order | order in set orders & order.status = <Supplier>};
 
