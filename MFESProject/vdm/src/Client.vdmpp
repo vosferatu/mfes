@@ -43,8 +43,7 @@ public getBalance: () ==> real
 public credit : real ==> ()
 		credit(amount) ==
 		balance := balance + amount
-	pre (balance + amount) >= 0 and amount > 0
-	post balance~ = balance + amount;
+	pre (balance + amount) >= 0 and amount > 0;
 
 -- User debit
 public debit : real ==> ()

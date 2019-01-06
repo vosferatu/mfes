@@ -20,6 +20,21 @@ instance variables
 
 operations
 
+-- Tests related to the Location Class
+private testLocationClass: () ==> ()
+	testLocationClass() ==
+	(
+		dcl loc1: Location := new Location(0,0),
+			loc2: Location := new Location(1,0);
+			
+		assertTrue(loc1.getX() = 0);
+		assertTrue(loc1.getY() = 0);
+		assertTrue(loc2.getX() = 1);
+		assertTrue(loc2.getY() = 0);
+		
+		assertEqual(Location`dist(loc1,loc2),1);
+	);
+
 -- Tests a client Creation
 private testCreateClient: () ==> ()
 	testCreateClient() ==
@@ -66,7 +81,7 @@ private testClientBalance: () ==> ()
 		assertEqual(client.getBalance(), 13);
 		
 		client.refund({pr});
-		assertEqual(client.getBalance(), 20);
+		assertEqual(client.getBalance(), 18);
 	);
 	
 -- Tests related to the client class
@@ -101,15 +116,15 @@ private testTransportClass: () ==> ()
 	(
 		dcl transport: Transport := new Transport("mota", 1, 1);
 		assertTrue(transport.getName() = "mota");
- 		assertEqual(transport.getLocation().getX(), 0);
- 		assertEqual(transport.getLocation().getY(), 0);
+ 		assertEqual(transport.getLocation().getX(), 1);
+ 		assertEqual(transport.getLocation().getY(), 1);
  		
  		transport.setLocation(new Location(3,4));
  		assertEqual(transport.getLocation().getX(), 3);
  		assertEqual(transport.getLocation().getY(), 4);
 	);
 	
--- Tests related to the Transport Class
+-- Tests related to the Supplier Class
 private testSupplierClass: () ==> ()
 	testSupplierClass() ==
 	(
@@ -122,10 +137,11 @@ private testSupplierClass: () ==> ()
  		assertEqual(sr.getLocation().getY(), 5);
  		assertEqual(sr.getProducts(), {});
  		
+ 		assertEqual(sr.getProducts(), {});
  		sr.addProduct(pr1);
  		assertEqual(sr.getProducts(), {pr1});
-		sr.addProduct(pr1);
- 		assertEqual(sr.getProducts(), {pr1}); 		
+		--sr.addProduct(pr1); -- this intentionally breaks precondition
+ 		assertEqual(sr.getProducts(), {pr1});		
  		sr.addProduct(pr2);
  		assertEqual(sr.getProducts(), {pr1, pr2});
  		
@@ -140,6 +156,78 @@ private testSupplierClass: () ==> ()
  		assertEqual(sr.getLocation().getX(), 3);
  		assertEqual(sr.getLocation().getY(), 4);
 	);
+	
+-- Tests related to the Delivery Class
+private testDeliveryClass: () ==> ()
+	testDeliveryClass() == 
+	(
+		dcl sr: Supplier := new Supplier("pizza", -5, 5),
+			pr1: Product := new Product("burguer", 1),
+			pr2: Product := new Product("pizza", 2),
+			tr1: Transport := new Transport("mota", 0, 5);
+		
+		dcl deli1: Delivery := new Delivery(1, {pr1}, nil, sr),
+			deli2: Delivery := new Delivery(1, {pr1, pr2}, tr1, sr);
+			
+		assertEqual(deli1.getSupplier(), sr);	
+		assertEqual(deli2.getSupplier(), sr);	
+		assertEqual(deli1.getProducts(), {pr1});
+		assertEqual(deli2.getProducts(), {pr1,pr2});
+		deli1.setProducts({pr1,pr2});
+		assertEqual(deli1.getProducts(), {pr1,pr2});
+		
+		assertEqual(deli1.getTransport(), nil);
+		assertEqual(deli2.getTransport(), tr1);
+		assertEqual(deli1.status, <Null>);
+		assertTrue(not deli1.doing());
+		assertTrue(deli2.doing());
+		deli1.setTransport(tr1);
+		assertEqual(deli1.getTransport(), tr1);
+		assertEqual(deli1.status, <Transport>);
+		
+		assertTrue(deli1.doing());
+		assertTrue(deli2.doing());
+		
+		deli1.update();
+		assertEqual(deli1.status, <Supplier>);
+		assertTrue(deli1.doing());
+		
+		deli1.update();
+		assertEqual(deli1.status, <Client>);
+		assertTrue(not deli1.doing());
+		
+	);
+	
+public static main: () ==> ()
+main() ==
+(
+		dcl glovoTest: GlovoTest := new GlovoTest();
+		
+		IO`print("testLocationClass -> ");
+		glovoTest.testLocationClass();
+		IO`println("Success");
+		
+		IO`print("testClientClass -> ");
+		glovoTest.testClientClass();
+		IO`println("Success");
+		
+		IO`print("testProductClass -> ");
+		glovoTest.testProductClass();
+		IO`println("Success");
+		
+		IO`print("testTransportClass -> ");
+		glovoTest.testTransportClass();
+		IO`println("Success");
+		
+		IO`print("testSupplierClass -> ");
+		glovoTest.testSupplierClass();
+		IO`println("Success");
+		
+		IO`print("testDeliveryClass -> ");
+		glovoTest.testDeliveryClass();
+		IO`println("Success");
+		
+);
 	
 functions
 	

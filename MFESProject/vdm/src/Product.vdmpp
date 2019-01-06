@@ -37,9 +37,8 @@ operations
 	public increaseQuantity : nat ==> ()
 		increaseQuantity(amount) ==
 		quantity := quantity + amount
-	pre (quantity + amount) >= 0
-	post quantity~ = quantity + amount;
-
+	pre (quantity + amount) >= 0;
+	
 	-- Decreases product quantity
 	public decreaseQuantity : nat ==> ()
 		decreaseQuantity(amount) ==
