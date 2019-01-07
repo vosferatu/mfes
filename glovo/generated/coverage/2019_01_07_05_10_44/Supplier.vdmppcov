@@ -1,0 +1,71 @@
+class Supplier
+
+types
+public String = seq of char;
+
+values
+
+instance variables
+		products: set of Product :={};
+		name: String;
+		location: Location;
+
+operations
+public Supplier: seq of char * int * int==> Supplier
+Supplier(supplierName, x, y) == (
+		name := supplierName;
+		products := {};
+		location := new Location(x, y);
+		return self
+);
+
+-- Returns supplier name
+public pure getName : () ==> String
+		getName() == 
+		return name;
+		
+-- Returns suppliers products
+pure public getProducts: () ==> set of Product
+			getProducts()  ==
+return products;
+
+-- Adds a product to suppliers menu
+public addProduct : Product ==> ()
+		addProduct(product) ==
+		products := products union {product}
+		pre product not in set products
+		post products = products~ union {product};
+	
+-- Remove product from suppliers menu
+public removeProduct : Product ==> ()
+		removeProduct(product) ==
+		products := products  \ {product}
+		pre product in set products
+		post products~ = products union {product} and product not in set products;
+		
+-- Returns a product by name
+public getProductsByName : String ==> set of Product 
+		getProductsByName(productName) ==
+		return {product | product in set products & product.name = productName};
+
+-- Change product price
+public setPrice : String * real ==> ()
+	setPrice(productName, price) ==
+	for all product in set getProductsByName(productName) do
+		product.setPrice(price);
+		
+-- Returns transport Location
+public pure getLocation : () ==> Location
+		getLocation() ==
+		return location;
+
+-- Changes Location
+public setLocation : Location ==> ()
+		setLocation(loc) ==
+				location := loc;
+
+functions
+
+traces
+
+end Supplier

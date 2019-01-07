@@ -1,0 +1,39 @@
+class Transport
+
+types
+public String = seq of char;
+
+values
+
+instance variables
+		name: String;
+		location: Location;
+
+operations
+public Transport: seq of char * int * int ==> Transport
+Transport(transportName, x, y) == (
+		name := transportName;
+		location := new Location(x, y);
+		return self
+);
+
+-- Returns transport name
+public pure getName : () ==> String
+		getName() == 
+		return name;
+
+-- Returns transport Location
+public pure getLocation : () ==> Location
+		getLocation() ==
+		return location;
+		
+-- Changes Location
+public setLocation : Location ==> ()
+		setLocation(loc) ==
+				location := loc;
+	
+functions
+
+traces
+
+end Transport

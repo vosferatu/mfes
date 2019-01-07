@@ -1,0 +1,135 @@
+class Client
+
+types
+public String = seq of char;
+
+values
+
+instance variables
+		name: String;
+		public static clientID: int := 0;
+		public id : int := clientID;
+		balance: real;
+		public location: Location;
+		
+		inv balance >= 0;
+		
+operations
+
+public Client: String * int * int ==> Client
+Client(clientName, x, y) == (
+		name := clientName;
+		id := clientID;
+		clientID := clientID + 1;
+		balance := 5;
+		location := new Location(x,y);
+		return self
+);
+
+-- Returns user name
+public pure getName : () ==> String
+		getName() == 
+		return name;
+
+-- Returns user ID
+public getID: () ==> int
+		getID() ==
+		return id;
+
+-- Returns user balance
+public getBalance: () ==> real
+		getBalance() ==
+		return balance;
+		
+-- User credit
+public credit : real ==> ()
+		credit(amount) ==
+		balance := balance + amount
+	pre (balance + amount) >= 0 and amount > 0;
+
+-- User debit
+public debit : real ==> ()
+		debit(amount) ==
+		balance := balance - amount
+	pre (balance - amount) >= 0 and amount > 0
+	post balance~ = balance + amount;
+
+-- Checks if user has enough credit
+pure public checkCredit : set of Product * rat ==> bool
+		checkCredit(list, fee) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			return balance > sum + fee;
+		)
+		pre list <> {};
+		
+-- Pay for products
+public pay : set of Product * rat ==> ()
+		pay(list, fee) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			if balance > sum + fee then debit(sum+fee);
+		)
+		pre list <> {};
+		
+-- Refund for products
+public refund : set of Product ==> ()
+		refund(list) ==
+		(
+			dcl sum: real := 0;
+			
+			for all product in set list do
+					sum:= sum + product.totalCost();
+					
+			credit(sum);
+		)
+		pre list <> {};
+		
+-- Changes Location
+public setLocation : Location ==> ()
+		setLocation(loc) ==
+				location := loc;
+
+-- Search for name
+public textSearch : seq of char ==> bool
+textSearch(q) == (
+	dcl tmp: seq of char := name;
+	dcl match: bool := false;
+	
+	while len tmp >= len q and not match do(
+		match := true;
+		
+		for index = 1 to len q do
+			if match and q(index) <> tmp(index) then (
+				match := false;
+			);
+		
+		if match then
+			return true
+		else (
+			tmp := tl tmp;
+			match := false;
+		);
+	);
+	return false;
+)		
+pre len q > 0;
+
+functions
+
+-- Compares 2 clients by ID
+public equals : Client * Client -> bool
+	equals(c1, c2) ==
+	c1.id = c2.id;
+
+traces
+
+end Client

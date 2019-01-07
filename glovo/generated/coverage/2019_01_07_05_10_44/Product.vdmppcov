@@ -1,0 +1,64 @@
+class Product
+
+types
+public String = seq of char;
+
+values
+
+instance variables
+		public name: String;
+		price: real;
+		quantity: nat := 0;
+		
+operations
+	public Product: String * real ==> Product
+	Product(product_name,product_price) == (
+			name := product_name;
+			price := product_price;
+			quantity := 1;
+			return self
+	);
+		
+	-- Returns product name
+	public pure getName : ()  ==> String
+		getName() == 
+		return name;
+
+	-- Returns product price
+	public pure getPrice : () ==> real
+		getPrice() == 
+		return price;
+
+	-- Returns product quantity
+	public pure getQuantity : () ==> nat
+		getQuantity() == return quantity;
+
+	-- Increases product quantity
+	public increaseQuantity : nat ==> ()
+		increaseQuantity(amount) ==
+		quantity := quantity + amount
+	pre (quantity + amount) >= 0;
+	
+	-- Decreases product quantity
+	public decreaseQuantity : nat ==> ()
+		decreaseQuantity(amount) ==
+		quantity := quantity - amount
+	pre (quantity - amount) >= 0
+	post quantity~ = quantity + amount;
+
+-- Change product price
+public setPrice : real ==> ()
+	setPrice(newPrice) ==
+	price := newPrice
+	post newPrice = price;
+	
+-- Total cost of the product
+pure public totalCost : () ==> real
+	totalCost() ==
+	return quantity * price;
+
+functions
+
+traces
+
+end Product

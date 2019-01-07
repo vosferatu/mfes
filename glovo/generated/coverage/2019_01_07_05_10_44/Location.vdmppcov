@@ -1,0 +1,38 @@
+class Location
+
+types
+
+values
+
+instance variables
+		public x: int;
+		public y: int;
+
+operations
+public Location: int * int ==> Location
+Location(i,j) == (
+		x := i;
+		y := j;
+		return self
+);
+
+-- Returns x
+public getX : () ==> int
+		getX() == 
+		return x;
+
+-- Returns y
+public getY : () ==> int
+		getY() == 
+		return y;
+
+functions
+
+-- evaluates distance between points
+public dist: Location * Location -> real
+	dist(a,b) ==
+	((b.x-a.x)*(b.x-a.x))+((b.y-a.y)*(b.y-a.y));
+
+traces
+
+end Location
