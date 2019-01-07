@@ -38,13 +38,13 @@ private testLocationClass: () ==> ()
 -- Tests a client Creation
 private testCreateClient: () ==> ()
 	testCreateClient() ==
-	(
+	( -- Requirement 1
  		dcl client: Client := new Client("x", 0 ,0);
  		assertEqual(client.getName(), "x");
  		assertEqual(client.getBalance(), 5);
  		assertEqual(client.location.getX(), 0);
  		assertEqual(client.location.getY(), 0);
- 		
+ 		-- Requirement 5
  		client.setLocation(new Location(3,4));
  		assertEqual(client.location.getX(), 3);
  		assertEqual(client.location.getY(), 4);
@@ -62,7 +62,7 @@ private testClientID: () ==> ()
 	
 -- Tests movements in a clients account
 private testClientBalance: () ==> ()
-	testClientBalance() ==
+	testClientBalance() == -- Requirement 6
 	(
 		dcl client: Client := new Client("carolina", 0, 0),
 				pr: Product := new Product("mota", 1);
@@ -127,7 +127,7 @@ private testTransportClass: () ==> ()
 -- Tests related to the Supplier Class
 private testSupplierClass: () ==> ()
 	testSupplierClass() ==
-	(
+	(-- Requirement 7
 		dcl sr: Supplier := new Supplier("pizza", -5, 5),
 		pr1: Product := new Product("burguer", 1),
 		pr2: Product := new Product("pizza", 2);
@@ -147,7 +147,7 @@ private testSupplierClass: () ==> ()
  		
  		assertEqual(sr.getProductsByName("burguer"), {pr1});
  		sr.setPrice("burguer", 5);
- 		pr1.setPrice(5);
+ 		pr1.setPrice(5); -- Requirement 8
  		assertEqual(sr.getProductsByName("burguer"), {pr1});
  		sr.removeProduct(pr1);
  		assertEqual(sr.getProducts(), {pr2});
@@ -258,7 +258,7 @@ public testSupplierGlovo: () ==> ()
 				glovo.addSupplier(sr2);
 				assertEqual(glovo.getSuppliers(), {sr1.getName() |-> sr1,sr2.getName() |-> sr2});
 
-				assertEqual(glovo.getSupplierByName("1"), sr1);
+				assertEqual(glovo.getSupplierByName("1"), sr1); -- Requirement 11
 				assertEqual(glovo.getSupplierByName("2"), sr2);
 				
 				glovo.removeSupplier("1");
@@ -296,7 +296,7 @@ public testDeliveryGlovo: () ==> ()
 				assertEqual(glovo.getDeliveryToDo(), {deli});
 				assertEqual(glovo.getDeliveryDone(), {});
 				assertEqual(glovo.getDeliveryDoing(), {});
-				assertEqual(glovo.getClientDeliveries(cli), {deli});
+				assertEqual(glovo.getClientDeliveries(cli), {deli}); -- Requirement 12
 				
 				for all order in set glovo.orders
 						do order.setTransport(tr1);
@@ -320,8 +320,8 @@ public testDeliveryGlovo: () ==> ()
 -- Tests related to Order in Glovo
 public testOrderGlovo: () ==> ()
 		testOrderGlovo() ==
-		(
-				(
+		(		
+				( -- Requirement 2
 				dcl glovo:Glovo := new Glovo(),
 					sr1:Supplier := new Supplier("a",5,0),
 					pr1:Product := new Product("burguer", 2),
@@ -332,7 +332,7 @@ public testOrderGlovo: () ==> ()
 				glovo.addClient(cli);
 				sr1.addProduct(pr1);		
 				glovo.addSupplier(sr1);
-				glovo.addTransport(tr1);
+				glovo.addTransport(tr1);-- Requirement 9
 				
 				assertEqual(glovo.getClientDeliveries(cli), {});
 				glovo.order(cli, sr1, {pr1});
@@ -357,7 +357,7 @@ public testOrderGlovo: () ==> ()
 				--assertTrue(card glovo.getClientDeliveries(cli) = 1);
 				--assertEqual(glovo.getTransports(), {});
 				);
-				(
+				( -- Requirement 4
 					dcl glovo:Glovo := new Glovo(),
 					sr1:Supplier := new Supplier("a",5,0),
 					pr1:Product := new Product("burguer", 2),
@@ -376,7 +376,7 @@ public testOrderGlovo: () ==> ()
 						do glovo.removeOrder(order);
 				assertTrue(card glovo.getClientDeliveries(cli) = 0);
 				);
-				(
+				(-- Requirement 3
 				dcl glovo:Glovo := new Glovo(),
 					sr2:Supplier := new Supplier("b", 2, 0),
 					pr1:Product := new Product("burguer", 2),
@@ -431,13 +431,13 @@ public testOrderGlovo: () ==> ()
 					glovo.addDelivery(deli);
 					assertEqual(glovo.getDeliveryDoing(), {deli});
 					
-					glovo.meetSupplier(deli);
+					glovo.meetSupplier(deli);-- Requirement 10
 					assertEqual(tr1.getLocation(), sr2.getLocation());
 					glovo.removeTransport(tr1);				
 					assertEqual(deli.status, <Supplier>);
 					assertEqual(glovo.getTransports(), {});
 					
-					glovo.meetClient(deli);
+					glovo.meetClient(deli);-- Requirement 10
 					assertEqual(cli.location, tr1.getLocation());
 					assertEqual(deli.status, <Client>);	
 					assertEqual(card glovo.getTransports(), 1);
